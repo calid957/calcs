@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Calculator</title>
+  <style>
+    /* Body background */
+    body {
+      font-family: sans-serif;
+      background-image: url('index.html.jpg'); /* Add the correct image path */
+      background-size: cover; /* Make the background image cover the entire viewport */
+      background-position: center; /* Center the background image */
+      background-attachment: fixed; /* Keep the background fixed while scrolling */
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Calculator styling with 50% transparency */
+    .calculator {
+      width: 300px;
+      margin: 100px auto;
+      border: 1px solid #ccc;
+      padding: 20px;
+      background-color: rgba(255, 255, 255, 0.4); /* 40% transparency */
+      border-radius: 10px;
+      backdrop-filter: blur(10px); /* Optional: Adds a blur effect to the background */
+    }
+
+    /* Button styling */
+    input[type="button"] {
+      width: 50px;
+      height: 50px;
+      margin: 5px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    #display {
+      width: 94%;
+      height: 40px;
+      margin: 5px;
+      font-size: 20px;
+      text-align: right;
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    /* Row styling for buttons */
+    .row {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .link {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      text-decoration: none;
+      font-size: 16px;
+      color: #333;
+      border: 1px solid #333;
+      padding: 5px 10px;
+      background-color: #f0f0f0;
+      border-radius: 5px;
+    }
+    .link:hover {
+      background-color: #ddd;
+    }
+
+    /* History table styling */
+    .history-table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+    }
+
+    .history-table, .history-table th, .history-table td {
+      border: 1px solid #ccc;
+    }
+
+    .history-table th, .history-table td {
+      padding: 8px;
+      text-align: left;
+    }
+
+    /* Clear history button styling */
+    .clear-history-btn {
+      display: block;
+      width: 100%;
+      padding: 8px;
+      margin-top: 10px;
+      background-color: #f44336;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .clear-history-btn:hover {
+      background-color: #d32f2f;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <input type="text" id="display" readonly>
+    <div class="row">
+      <input type="button" value="7" onclick="appendToDisplay('7')">
+      <input type="button" value="8" onclick="appendToDisplay('8')">
+      <input type="button" value="9" onclick="appendToDisplay('9')">
+      <input type="button" value="/" onclick="appendToDisplay('/')">
+    </div>
+    <div class="row">
+      <input type="button" value="4" onclick="appendToDisplay('4')">
+      <input type="button" value="5" onclick="appendToDisplay('5')">
+      <input type="button" value="6" onclick="appendToDisplay('6')">
+      <input type="button" value="*" onclick="appendToDisplay('*')">
+    </div>
+    <div class="row">
+      <input type="button" value="1" onclick="appendToDisplay('1')">
+      <input type="button" value="2" onclick="appendToDisplay('2')">
+      <input type="button" value="3" onclick="appendToDisplay('3')">
+      <input type="button" value="-" onclick="appendToDisplay('-')">
+    </div>
+    <div class="row">
+      <input type="button" value="0" onclick="appendToDisplay('0')">
+      <input type="button" value="." onclick="appendToDisplay('.')">
+      <input type="button" value="C" onclick="clearDisplay()">
+      <input type="button" value="+" onclick="appendToDisplay('+')">
+    </div>
+    <input type="button" value="=" onclick="calculate()" style="width: 210px;">
+    <input type="button" value="🎤" onclick="startVoiceRecognition()">
+  </div>
+
+  <a href="c:/Users/HP/Desktop/ccc/ScieCalc.html" class="link" target="_blank">Scientific Calculator</a>
+
+  <!-- History Log Table -->
+  <table class="history-table">
+    <thead>
+      <tr>
+        <th>Expression</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody id="history-log"></tbody>
+  </table>
+
+  <!-- Clear History Button -->
+  <button class="clear-history-btn" onclick="clearHistory()">Clear History</button>
+
+  <script>
+    let currentInput = '';
+    let history = [];
+
+    // Voice Recognition Setup
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'en-US';
+
+    recognition.onresult = function(event) {
+      const transcript = event.results[0][0].transcript;
+      appendToDisplay(transcript);  // Append the recognized speech to display
+    };
+
+    recognition.onerror = function(event) {
+      console.error('Voice recognition error:', event.error);
+    };
+
+    function startVoiceRecognition() {
+      recognition.start();  // Start voice recognition
+    }
+
+    function appendToDisplay(value) {
+      const display = document.getElementById('display');
+      const lastChar = display.value[display.value.length - 1];
+
+      // Avoid multiple consecutive operators (like "++" or "")
+      if (isOperator(value) && isOperator(lastChar)) {
+        return; // Do nothing if both current and last characters are operators
+      }
+
+      display.value += value;
+      currentInput += value;
+    }
+
+    function clearDisplay() {
+      document.getElementById('display').value = '';
+      currentInput = '';
+    }
+
+    function calculate() {
+      try {
+        const sanitizedInput = currentInput.replace(/[^-()\d/*+.]/g, ''); // Sanitize input to avoid unwanted characters
+        let result = new Function('return ' + sanitizedInput)(); // Safe alternative to eval() for basic math
+        document.getElementById('display').value = result;
+        const expression = currentInput; // The expression typed by the user
+        currentInput = result.toString(); // Store result as the new input for further calculations
+
+        // Add calculation to history log
+        history.push({ expression: expression, result });
+        updateHistoryLog();
+
+      } catch (error) {
+        document.getElementById('display').value = 'Error';
+        currentInput = '';
+      }
+    }
+
+    function isOperator(value) {
+      return ['+', '-', '*', '/'].includes(value);
+    }
+
+    // Update the history log
+    function updateHistoryLog() {
+      const historyLog = document.getElementById('history-log');
+      historyLog.innerHTML = '';  // Clear previous history
+
+      // Populate with new history
+      history.forEach((entry) => {
+        const row = document.createElement('tr');
+        const expressionCell = document.createElement('td');
+        expressionCell.textContent = entry.expression; // Display the input expression
+        const resultCell = document.createElement('td');
+        resultCell.textContent = entry.result; // Display the result
+        row.appendChild(expressionCell);
+        row.appendChild(resultCell);
+        historyLog.appendChild(row);
+      });
+    }
+
+    // Clear history log
+    function clearHistory() {
+      history = [];
+      updateHistoryLog();  // Re-render the table after clearing history
+    }
+  </script>
+</body>
+</html>

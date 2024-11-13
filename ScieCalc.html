@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scientific Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(to bottom right, #6a11cb, #2575fc);
+            background-image: url('index1.html.jpg'); /* Ensure the image path is correct */
+            background-size: cover;
+            background-position: center;
+        }
+
+        #calculator {
+            background-color: rgba(255, 255, 255, 0.4);  /* 40% opacity */
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            height: 50px;
+            font-size: 28px;
+            text-align: right;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 22%;
+            height: 60px;
+            font-size: 20px;
+            margin: 5px 1%;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #6a11cb;
+            color: white;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        button:hover {
+            background-color: #2575fc;
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .function-button {
+            background-color: #ff4757;
+        }
+
+        .function-button:hover {
+            background-color: #ff6b81;
+        }
+
+        .equal-button {
+            background-color: #2ed573;
+        }
+
+        .equal-button:hover {
+            background-color: #5be576;
+        }
+
+        .button-row {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* History log styles */
+        .history-log {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            border-top: 2px solid #ccc;
+            padding-top: 10px;
+        }
+
+        .history-log table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .history-log table, .history-log th, .history-log td {
+            border: 1px solid #ddd;
+        }
+
+        .history-log th, .history-log td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        /* Clear history button */
+        #clear-history {
+            background-color: #ff4757;
+            border: none;
+            color: white;
+            padding: 10px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+
+        #clear-history:hover {
+            background-color: #ff6b81;
+        }
+
+        .link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            text-decoration: none;
+            font-size: 16px;
+            color: #333;
+            border: 1px solid #333;
+            padding: 5px 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+        
+        .link:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div id="calculator">
+        <input type="text" id="display" disabled>
+
+        <!-- Number and basic operation buttons -->
+        <div class="button-row">
+            <button onclick="clearDisplay()">C</button>
+            <button onclick="appendToDisplay('7')">7</button>
+            <button onclick="appendToDisplay('8')">8</button>
+            <button onclick="appendToDisplay('9')">9</button>
+            <button class="function-button" onclick="appendToDisplay('/')">/</button>
+        </div>
+        <div class="button-row">
+            <button onclick="appendToDisplay('4')">4</button>
+            <button onclick="appendToDisplay('5')">5</button>
+            <button onclick="appendToDisplay('6')">6</button>
+            <button class="function-button" onclick="appendToDisplay('*')">*</button>
+        </div>
+        <div class="button-row">
+            <button onclick="appendToDisplay('1')">1</button>
+            <button onclick="appendToDisplay('2')">2</button>
+            <button onclick="appendToDisplay('3')">3</button>
+            <button class="function-button" onclick="appendToDisplay('-')">-</button>
+        </div>
+        <div class="button-row">
+            <button onclick="appendToDisplay('0')">0</button>
+            <button onclick="appendToDisplay('.')">.</button>
+            <button class="equal-button" onclick="calculateResult()">=</button>
+            <button class="function-button" onclick="appendToDisplay('+')">+</button>
+        </div>
+
+        <!-- Scientific function buttons -->
+        <div class="button-row">
+            <button class="function-button" onclick="appendToDisplay('Math.sin(')">sin</button>
+            <button class="function-button" onclick="appendToDisplay('Math.cos(')">cos</button>
+            <button class="function-button" onclick="appendToDisplay('Math.tan(')">tan</button>
+            <button class="function-button" onclick="appendToDisplay('Math.log(')">log</button>
+        </div>
+        <div class="button-row">
+            <button class="function-button" onclick="appendToDisplay('Math.pow(')">x^y</button>
+            <button class="function-button" onclick="appendToDisplay('Math.sqrt(')">√</button>
+            <button class="function-button" onclick="appendToDisplay('Math.PI')">π</button>
+            <button class="function-button" onclick="appendToDisplay('Math.E')">e</button>
+        </div>
+
+        <!-- History Log -->
+        <div class="history-log" id="history-log">
+            <table id="history-table">
+                <thead>
+                    <tr>
+                        <th>Calculation</th>
+                        <th>Result</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- History items will appear here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Clear History Button -->
+        <button id="clear-history" onclick="clearHistory()">Clear History</button>
+    </div>
+
+    <!-- Link to Simple Calculator -->
+    <a href="c:/Users/HP/Desktop/ccc/calcproject.html" class="link" target="_blank">Simple Calculator</a>
+
+    <script>
+        const display = document.getElementById('display');
+        const historyTableBody = document.querySelector('#history-table tbody');
+
+        // Append values to the display
+        function appendToDisplay(value) {
+            const lastChar = display.value[display.value.length - 1];
+            if (isOperator(value) && isOperator(lastChar)) {
+                return;
+            }
+            display.value += value;
+        }
+
+        // Clear the display
+        function clearDisplay() {
+            display.value = '';
+        }
+
+        // Calculate the result
+        function calculateResult() {
+            try {
+                // Use a safer eval alternative with Function constructor
+                const result = Function('"use strict";return (' + display.value + ')')();
+                display.value = result;
+
+                // Save the calculation and result to history
+                addHistory(display.value, result);
+            } catch (error) {
+                display.value = 'Error';
+            }
+        }
+
+        // Add the calculation to history
+        function addHistory(calculation, result) {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${calculation}</td>
+                <td>${result}</td>
+            `;
+            historyTableBody.appendChild(row);
+        }
+
+        // Check if the value is an operator
+        function isOperator(value) {
+            return ['+', '-', '*', '/'].includes(value);
+        }
+
+        // Clear history log
+        function clearHistory() {
+            historyTableBody.innerHTML = ''; // Clear the history table
+        }
+
+        // Keyboard support for input
+        window.addEventListener('keydown', function(event) {
+            const key = event.key;
+            if (key === 'Enter') {
+                calculateResult();
+            } else if (key === 'Backspace') {
+                clearDisplay();
+            } else if ('0123456789+-*/.'.includes(key)) {
+                appendToDisplay(key);
+            }
+        });
+    </script>
+</body>
+</html>
